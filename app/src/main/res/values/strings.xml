@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ServicesDemo</string>
+    <string name="count_tv_text">Counter:</string>
+    <string name="stop_service_btn_text">Stop Service</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
