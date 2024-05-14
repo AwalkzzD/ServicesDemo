@@ -27,7 +27,6 @@ class CounterService : Service() {
 
     private var counter = 0
     private var countDownTime: Long = 10000
-    private var remainingTime = countDownTime
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -36,7 +35,6 @@ class CounterService : Service() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent != null) {
                     val timeDiff = (intent.getLongExtra("countdown_time", 0) * 1000)
-                    remainingTime += timeDiff
                     countDownTime += timeDiff
 
                     Toast.makeText(
@@ -68,12 +66,12 @@ class CounterService : Service() {
 
         timer.schedule(object : TimerTask() {
             override fun run() {
-                if (counter < countDownTime / 1000) {
+                if (countDownTime / 1000 > 0) {
                     counter++
-                    remainingTime -= 1000
+                    countDownTime -= 1000
 
                     notificationManager.notify(
-                        1, createNotification(this@CounterService, remainingTime.convertToTime())
+                        1, createNotification(this@CounterService, countDownTime.convertToTime())
                     )
 
                     sendBroadcast(Intent("counter_updated").putExtra("counter", counter))
