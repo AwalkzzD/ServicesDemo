@@ -5,4 +5,8 @@
     <string name="start_service_btn_text">Start Service</string>
     <string name="add_time_btn_text">Add Time</string>
     <string name="countdown_time_et_hint">Enter countdown time | Default - 10 seconds</string>
+    <string name="countdown_time_et_empty_toast_msg">Please enter countdown time</string>
+    <string name="service_not_running_toast_msg">Counter Service Not Running</string>
+    <string name="service_already_running_toast_msg">Counter Service Already Running</string>
+    <string name="service_stopped_toast_msg">Counter Service Stopped</string>
 </resources>

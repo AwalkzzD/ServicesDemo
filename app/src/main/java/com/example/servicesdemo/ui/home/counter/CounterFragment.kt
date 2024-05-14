@@ -62,10 +62,12 @@ class CounterFragment : BaseFragment<FragmentCounterBinding, CounterViewModel>(
                     )
                     fragmentBinding.countdownTimeEt.text.clear()
                 } else {
-                    showToast("Please enter countdown time", Toast.LENGTH_SHORT)
+                    showToast(
+                        getString(R.string.countdown_time_et_empty_toast_msg), Toast.LENGTH_SHORT
+                    )
                 }
             } else {
-                showToast("Counter Service Not Running", Toast.LENGTH_SHORT)
+                showToast(getString(R.string.service_not_running_toast_msg), Toast.LENGTH_SHORT)
             }
         }
 
@@ -73,7 +75,7 @@ class CounterFragment : BaseFragment<FragmentCounterBinding, CounterViewModel>(
         fragmentBinding.startServiceBtn.setOnClickListener {
             // check if service already running
             if (requireActivity().isServiceRunning(CounterService::class.java)) {
-                showToast("Counter Service Already Running", Toast.LENGTH_SHORT)
+                showToast(getString(R.string.service_already_running_toast_msg), Toast.LENGTH_SHORT)
             } else {
                 // start service
                 requireActivity().startService(counterServiceIntent)

@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.os.IBinder
 import android.widget.Toast
+import com.example.servicesdemo.R
 import com.example.servicesdemo.base.extensions.convertToTime
 import com.example.servicesdemo.base.utils.NotificationUtils
 import com.example.servicesdemo.base.utils.NotificationUtils.createNotification
@@ -77,7 +78,6 @@ class CounterService : Service() {
 
                     sendBroadcast(Intent("counter_updated").putExtra("counter", counter))
                 } else {
-
                     /**
                      *  To stop the service after the countdown value is over,
                      *  Once service is stopped, it will not show the notification and the counter will not be updated.
@@ -90,7 +90,8 @@ class CounterService : Service() {
     }
 
     override fun onDestroy() {
-        Toast.makeText(this, "Service Task Completed", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, getString(R.string.service_stopped_toast_msg), Toast.LENGTH_SHORT)
+            .show()
         unregisterReceiver(broadcastReceiver)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
