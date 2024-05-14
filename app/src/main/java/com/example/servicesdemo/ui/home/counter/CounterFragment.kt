@@ -19,50 +19,75 @@ class CounterFragment : BaseFragment<FragmentCounterBinding, CounterViewModel>(
     R.layout.fragment_counter, CounterViewModel::class.java
 ) {
 
-    private lateinit var broadcastReceiver: BroadcastReceiver
+    private val broadcastReceiver: BroadcastReceiver by lazy {
+        fragmentViewModel.broadcastReceiver
+    }
     private lateinit var counterServiceIntent: Intent
 
     override fun setUpView() {
-        setUpService()
+        init()
         registerBroadcastReceiver()
         setUpObservers()
         setUpListeners()
     }
 
+    private fun init() {
+        counterServiceIntent = Intent(requireActivity(), CounterService::class.java)
+
+        // check notification permissions
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (!isGranted(AppPermission.POST_NOTIFICATIONS)) {
+                requestPermission(AppPermission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
     private fun setUpObservers() {
+        // view model counter observer
         fragmentViewModel.counterLiveData.observe(viewLifecycleOwner) { count ->
             fragmentBinding.count.text = count.toString()
         }
     }
 
     private fun setUpListeners() {
+        // add time button listener
+        fragmentBinding.addTimeBtn.setOnClickListener {
+            if (requireActivity().isServiceRunning(CounterService::class.java)) {
+                if (fragmentBinding.countdownTimeEt.text.isNotEmpty()) {
+                    requireActivity().sendBroadcast(
+                        Intent("timer_updated").putExtra(
+                            "countdown_time",
+                            fragmentBinding.countdownTimeEt.text.toString().toLong()
+                        )
+                    )
+                    fragmentBinding.countdownTimeEt.text.clear()
+                } else {
+                    showToast("Please enter countdown time", Toast.LENGTH_SHORT)
+                }
+            } else {
+                showToast("Counter Service Not Running", Toast.LENGTH_SHORT)
+            }
+        }
+
+        // start service button listener
+        fragmentBinding.startServiceBtn.setOnClickListener {
+            // check if service already running
+            if (requireActivity().isServiceRunning(CounterService::class.java)) {
+                showToast("Counter Service Already Running", Toast.LENGTH_SHORT)
+            } else {
+                // start service
+                requireActivity().startService(counterServiceIntent)
+            }
+        }
+
+        // stop service button listener
         fragmentBinding.stopServiceBtn.setOnClickListener {
             requireActivity().stopService(counterServiceIntent)
         }
     }
 
-    private fun setUpService() {
-
-        // check permissions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (!isGranted(AppPermission.POST_NOTIFICATIONS)) {
-                requestPermission(AppPermission.POST_NOTIFICATIONS)
-            }
-        }
-
-        // create service intent
-        counterServiceIntent = Intent(requireActivity(), CounterService::class.java)
-
-        // check service running
-        if (requireActivity().isServiceRunning(CounterService::class.java)) {
-            showToast("Counter Service Already Running", Toast.LENGTH_SHORT)
-        } else {
-            // start service
-            requireActivity().startService(counterServiceIntent)
-        }
-    }
-
     private fun registerBroadcastReceiver() {
+        // register broadcast receiver
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requireActivity().registerReceiver(
                 fragmentViewModel.broadcastReceiver,
@@ -73,6 +98,7 @@ class CounterFragment : BaseFragment<FragmentCounterBinding, CounterViewModel>(
     }
 
     override fun onDestroy() {
+        // unregister broadcast receiver
         requireActivity().unregisterReceiver(broadcastReceiver)
         super.onDestroy()
     }

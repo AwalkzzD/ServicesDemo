@@ -20,7 +20,7 @@ object DialogUtils {
             .apply { window?.setBackgroundDrawableResource(android.R.color.transparent) }
     }
 
-    fun showDialog(
+    fun getAlertDialog(
         titleText: String,
         messageText: String,
         positiveButtonText: String,
@@ -45,18 +45,17 @@ object DialogUtils {
 
 object NotificationUtils {
 
-    fun getNotificationManager(context: Context): NotificationManager {
-        return context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    }
+    fun getNotificationManager(context: Context) =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    fun createNotification(context: Context, count: Int): Notification {
+    fun createNotification(context: Context, msg: String): Notification {
         val channel =
             NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
 
         getNotificationManager(context).createNotificationChannel(channel)
 
         return NotificationCompat.Builder(context, CHANNEL_ID).setContentTitle("Counter Service")
-            .setContentText("Counter: $count").setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentText(msg).setSmallIcon(R.drawable.ic_launcher_foreground)
             .setOngoing(true).build()
     }
 }

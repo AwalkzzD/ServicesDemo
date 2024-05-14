@@ -2,8 +2,14 @@ package com.example.servicesdemo.services
 
 import android.app.NotificationManager
 import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.IBinder
+import android.widget.Toast
+import com.example.servicesdemo.base.extensions.convertToTime
 import com.example.servicesdemo.base.utils.NotificationUtils
 import com.example.servicesdemo.base.utils.NotificationUtils.createNotification
 import java.util.Timer
@@ -11,44 +17,83 @@ import java.util.TimerTask
 
 class CounterService : Service() {
 
-    private val notificationManager: NotificationManager =
-        NotificationUtils.getNotificationManager(this@CounterService)
-
-    private var counter = 0
     private val timer = Timer()
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    private val notificationManager: NotificationManager by lazy {
+        NotificationUtils.getNotificationManager(this@CounterService)
     }
 
+    private lateinit var broadcastReceiver: BroadcastReceiver
+
+    private var counter = 0
+    private var countDownTime: Long = 10000
+    private var remainingTime = countDownTime
+
+    override fun onBind(intent: Intent?): IBinder? = null
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        startForeground(1, createNotification(this@CounterService, counter))
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent != null) {
+                    val timeDiff = (intent.getLongExtra("countdown_time", 0) * 1000)
+                    remainingTime += timeDiff
+                    countDownTime += timeDiff
 
-        timer.schedule(object : TimerTask() {
-            override fun run() {
-                if (counter < 100) {
-                    counter++
-
-                    notificationManager.notify(1, createNotification(this@CounterService, counter))
-
-                    val callBackIntent = Intent("counter_updated")
-                    callBackIntent.putExtra("counter", counter)
-                    sendBroadcast(callBackIntent)
-                } else {
-                    stopSelf()
+                    Toast.makeText(
+                        context,
+                        "Task will run for more ${timeDiff.convertToTime()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
-        }, 0, 1000)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                broadcastReceiver, IntentFilter("timer_updated"), Context.RECEIVER_EXPORTED
+            )
+        }
+
+        startForeground(1, createNotification(this@CounterService, countDownTime.convertToTime()))
+
+        performCountDown()
 
         return START_STICKY
     }
 
-    override fun stopService(name: Intent?): Boolean {
-        return super.stopService(name)
+    private fun performCountDown() {
+        Toast.makeText(
+            this, "Task will run for ${countDownTime.convertToTime()}", Toast.LENGTH_SHORT
+        ).show()
+
+        timer.schedule(object : TimerTask() {
+            override fun run() {
+                if (counter < countDownTime / 1000) {
+                    counter++
+                    remainingTime -= 1000
+
+                    notificationManager.notify(
+                        1, createNotification(this@CounterService, remainingTime.convertToTime())
+                    )
+
+                    sendBroadcast(Intent("counter_updated").putExtra("counter", counter))
+                } else {
+
+                    /**
+                     *  To stop the service after the countdown value is over,
+                     *  Once service is stopped, it will not show the notification and the counter will not be updated.
+                     */
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                    stopSelf()
+                }
+            }
+        }, 0, 1000)
     }
 
     override fun onDestroy() {
+        Toast.makeText(this, "Service Task Completed", Toast.LENGTH_SHORT).show()
+        unregisterReceiver(broadcastReceiver)
         stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
         timer.cancel()
         super.onDestroy()
     }
