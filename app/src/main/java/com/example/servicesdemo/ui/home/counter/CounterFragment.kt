@@ -1,19 +1,32 @@
 package com.example.servicesdemo.ui.home.counter
 
+import android.app.job.JobInfo
+import android.app.job.JobScheduler
 import android.content.BroadcastReceiver
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.work.Constraints
+import androidx.work.Data
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.example.servicesdemo.R
 import com.example.servicesdemo.base.extensions.isServiceRunning
+import com.example.servicesdemo.base.utils.AppConstants.JS_JOB_ID
 import com.example.servicesdemo.base.utils.AppPermission
 import com.example.servicesdemo.base.utils.isGranted
 import com.example.servicesdemo.base.utils.requestPermission
 import com.example.servicesdemo.base.views.BaseFragment
 import com.example.servicesdemo.databinding.FragmentCounterBinding
-import com.example.servicesdemo.services.CounterService
+import com.example.servicesdemo.services.foreground.CounterService
+import com.example.servicesdemo.services.jobscheduler.NotificationJS
+import com.example.servicesdemo.services.workmanager.NotificationWM
+import java.util.concurrent.TimeUnit
 
 class CounterFragment : BaseFragment<FragmentCounterBinding, CounterViewModel>(
     R.layout.fragment_counter, CounterViewModel::class.java
@@ -86,6 +99,61 @@ class CounterFragment : BaseFragment<FragmentCounterBinding, CounterViewModel>(
         fragmentBinding.stopServiceBtn.setOnClickListener {
             requireActivity().stopService(counterServiceIntent)
         }
+
+        // schedule job using Work Manager button click listener
+        fragmentBinding.scheduleJobWm.setOnClickListener {
+            createWorkRequestWM()
+        }
+
+        fragmentBinding.scheduleJobJs.setOnClickListener {
+            createWorkRequestJS()
+        }
+    }
+
+    private fun createWorkRequestJS() {
+        val componentName = ComponentName(requireContext(), NotificationJS::class.java)
+        val jobInfo = JobInfo.Builder(JS_JOB_ID, componentName)
+            .build()
+
+        val jobScheduler =
+            requireContext().getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        jobScheduler.schedule(jobInfo)
+    }
+
+    private fun createWorkRequestWM() {
+        // one time work request
+        val oneTimeWorkRequest = OneTimeWorkRequest.Builder(NotificationWM::class.java)
+            .setInputData(Data.Builder().putString("name", "Devarshi").build())
+            .setConstraints(
+                Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+            )
+            .setInitialDelay(5, TimeUnit.SECONDS).build()
+
+        WorkManager.getInstance(requireContext()).enqueue(oneTimeWorkRequest)
+
+
+        /*
+        // periodic work request
+        val periodicWorkRequest = PeriodicWorkRequest.Builder(
+            NotificationWM::class.java, 15, TimeUnit.MINUTES
+        ).build()
+
+        WorkManager.getInstance(requireContext()).enqueue(periodicWorkRequest)
+        */
+
+
+        /*
+        // work chaining
+        val chainWork = WorkManager.getInstance(requireContext()).beginUniqueWork(
+            AppConstants.CHAIN_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            OneTimeWorkRequest.from(NotificationWM::class.java)
+        ).then(OneTimeWorkRequest.from(LoggingWM::class.java)).enqueue()
+
+        chainWork.state.observe(viewLifecycleOwner) {
+            showToast(it.toString(), Toast.LENGTH_SHORT)
+        }
+        */
     }
 
     private fun registerBroadcastReceiver() {

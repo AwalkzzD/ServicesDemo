@@ -1,4 +1,4 @@
-package com.example.servicesdemo.services
+package com.example.servicesdemo.services.foreground
 
 import android.app.NotificationManager
 import android.app.Service

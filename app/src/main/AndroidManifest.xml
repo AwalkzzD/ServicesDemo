@@ -27,9 +27,15 @@
         </activity>
 
         <service
-            android:name=".services.CounterService"
+            android:name=".services.foreground.CounterService"
             android:exported="false"
             android:foregroundServiceType="specialUse" />
+
+        <service
+            android:name=".services.jobscheduler.NotificationJS"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
 
     </application>
 
