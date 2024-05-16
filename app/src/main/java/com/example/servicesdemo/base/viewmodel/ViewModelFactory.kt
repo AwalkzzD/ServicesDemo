@@ -3,17 +3,44 @@ package com.example.servicesdemo.base.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.example.cleanarchitecture.domain.repository.AlarmRepositoryImpl
+import com.example.cleanarchitecture.domain.usecase.user.GetAllAlarms
+import com.example.cleanarchitecture.domain.usecase.user.SaveAlarm
+import com.example.servicesdemo.base.utils.AlarmsAppDatabase
+import com.example.servicesdemo.data.repository.AlarmLocalDataSourceImpl
+import com.example.servicesdemo.ui.home.alarm.AlarmViewModel
 import com.example.servicesdemo.ui.home.counter.CounterViewModel
 
 class ViewModelFactory(
     private val mApplication: Application
 ) : ViewModelProvider.Factory {
 
+    private val alarmsAppDatabase by lazy {
+        AlarmsAppDatabase.getInstance(mApplication)
+    }
+
+    private val alarmRepository by lazy {
+        AlarmRepositoryImpl(
+            AlarmLocalDataSourceImpl(alarmsAppDatabase.alarmsDao())
+        )
+    }
+
+    private val getAllAlarms by lazy {
+        GetAllAlarms(alarmRepository)
+    }
+
+    private val saveAlarm by lazy {
+        SaveAlarm(alarmRepository)
+    }
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T = with(modelClass) {
         when {
             isAssignableFrom(CounterViewModel::class.java) -> {
                 CounterViewModel()
+            }
+
+            isAssignableFrom(AlarmViewModel::class.java) -> {
+                AlarmViewModel(getAllAlarms, saveAlarm)
             }
 
             else -> {

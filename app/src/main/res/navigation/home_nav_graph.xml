@@ -10,4 +10,9 @@
         android:name="com.example.servicesdemo.ui.home.counter.CounterFragment"
         android:label="CounterFragment"
         tools:layout="@layout/fragment_counter" />
+    <fragment
+        android:id="@+id/alarmFragment"
+        android:name="com.example.servicesdemo.ui.home.alarm.AlarmFragment"
+        android:label="fragment_alarm"
+        tools:layout="@layout/fragment_alarm" />
 </navigation>

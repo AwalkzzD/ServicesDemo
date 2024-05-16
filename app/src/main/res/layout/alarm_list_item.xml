@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="alarm"
+            type="com.example.servicesdemo.data.dto.alarm.Alarm" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:backgroundTint="@color/white"
+        app:cardCornerRadius="7dp"
+        app:cardElevation="10dp"
+        app:strokeColor="@color/green"
+        app:strokeWidth="2dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="10dp"
+            android:padding="10dp">
+
+            <ImageView
+                android:id="@+id/ic_alarm"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_alarm" />
+
+            <TextView
+                android:id="@+id/alarm_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@id/ic_alarm"
+                android:text="@{alarm.time}"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="12:00 AM" />
+
+            <TextView
+                android:id="@+id/alarm_msg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/alarm_time"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@id/ic_alarm"
+                android:text="@{String.valueOf(alarm.message + ` ` + alarm.id.toString())}"
+                android:textColor="@color/black"
+                android:textSize="15sp"
+                android:textStyle="italic"
+                tools:text="Buy Flowers" />
+
+        </RelativeLayout>
+
+
+    </com.google.android.material.card.MaterialCardView>
+</layout>

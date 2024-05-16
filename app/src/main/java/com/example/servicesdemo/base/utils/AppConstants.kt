@@ -10,6 +10,9 @@ object AppConstants {
     const val CHANNEL_ID_JS = "js_channel"
     const val CHANNEL_NAME_JS = "JobScheduler Service"
 
+    const val CHANNEL_ID_ALARM = "alarm_channel"
+    const val CHANNEL_NAME_ALARM = "Alarm Service"
+
     const val CHAIN_WORK_NAME = "CHAIN WORK"
 
     const val JS_JOB_ID = 1

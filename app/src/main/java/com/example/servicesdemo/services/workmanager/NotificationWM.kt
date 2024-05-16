@@ -13,14 +13,13 @@ class NotificationWM(private val context: Context, workerParams: WorkerParameter
     context, workerParams
 ) {
 
-    private val data: String = workerParams.inputData.getString("name").toString()
+    private val data = workerParams.inputData.getString("name")
 
     private val notificationManager: NotificationManager by lazy {
         NotificationUtils.getNotificationManager(context)
     }
 
     override fun doWork(): Result {
-
         Log.d(TAG, "doWork: Notification chain task started")
 
         notificationManager.notify(

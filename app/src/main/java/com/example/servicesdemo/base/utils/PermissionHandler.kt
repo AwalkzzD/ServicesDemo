@@ -67,4 +67,15 @@ sealed class AppPermission(
     data object POST_NOTIFICATIONS : AppPermission(
         Manifest.permission.POST_NOTIFICATIONS
     )
+
+    @RequiresApi(Build.VERSION_CODES.S)
+    data object SCHEDULE_EXACT_ALARM : AppPermission(
+        Manifest.permission.SCHEDULE_EXACT_ALARM
+    )
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    data object USE_EXACT_ALARM : AppPermission(
+        Manifest.permission.USE_EXACT_ALARM
+    )
+
 }
