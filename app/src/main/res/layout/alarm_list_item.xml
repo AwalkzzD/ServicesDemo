@@ -52,7 +52,7 @@
                 android:layout_below="@id/alarm_time"
                 android:layout_marginStart="10dp"
                 android:layout_toEndOf="@id/ic_alarm"
-                android:text="@{String.valueOf(alarm.message + ` ` + alarm.id.toString())}"
+                android:text="@{String.valueOf(alarm.message + ` ` + String.valueOf(alarm.id))}"
                 android:textColor="@color/black"
                 android:textSize="15sp"
                 android:textStyle="italic"

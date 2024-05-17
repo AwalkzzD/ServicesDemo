@@ -9,7 +9,7 @@ import com.example.servicesdemo.data.local.model.AlarmEntity
 @Dao
 interface AlarmsDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    fun saveAlarm(alarm: AlarmEntity)
+    fun saveAlarm(alarm: AlarmEntity): Long
 
     @Query("SELECT * from alarms")
     fun getAllAlarms(): List<AlarmEntity>

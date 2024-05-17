@@ -34,13 +34,18 @@
             android:foregroundServiceType="specialUse" />
 
         <service
+            android:name=".services.foreground.AlarmService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
+
+        <service
             android:name=".services.jobscheduler.NotificationJS"
             android:enabled="true"
             android:exported="false"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <receiver android:name=".ui.home.alarm.utils.AlarmDismissReceiver" />
         <receiver android:name=".ui.home.alarm.utils.AlarmReceiver" />
-        <receiver android:name=".ui.home.alarm.utils.AlarmDismissHandler" />
 
     </application>
 

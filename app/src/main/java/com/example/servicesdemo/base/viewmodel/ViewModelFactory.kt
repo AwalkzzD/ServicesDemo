@@ -3,9 +3,9 @@ package com.example.servicesdemo.base.viewmodel
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.cleanarchitecture.domain.repository.AlarmRepositoryImpl
-import com.example.cleanarchitecture.domain.usecase.user.GetAllAlarms
-import com.example.cleanarchitecture.domain.usecase.user.SaveAlarm
+import com.example.servicesdemo.domain.repository.AlarmRepositoryImpl
+import com.example.servicesdemo.domain.user.GetAllAlarms
+import com.example.servicesdemo.domain.user.SaveAlarm
 import com.example.servicesdemo.base.utils.AlarmsAppDatabase
 import com.example.servicesdemo.data.repository.AlarmLocalDataSourceImpl
 import com.example.servicesdemo.ui.home.alarm.AlarmViewModel

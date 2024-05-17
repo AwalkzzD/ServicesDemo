@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.servicesdemo.R
 import com.example.servicesdemo.base.adapter.GenericDataAdapter
 import com.example.servicesdemo.base.extensions.toLocalDateTime
+import com.example.servicesdemo.base.utils.AlarmUtils
 import com.example.servicesdemo.base.utils.AppPermission
 import com.example.servicesdemo.base.utils.CommonUtils
 import com.example.servicesdemo.base.utils.isGranted
@@ -14,7 +15,6 @@ import com.example.servicesdemo.base.utils.requestPermission
 import com.example.servicesdemo.base.views.BaseFragment
 import com.example.servicesdemo.data.dto.alarm.Alarm
 import com.example.servicesdemo.databinding.FragmentAlarmBinding
-import com.example.servicesdemo.ui.home.alarm.utils.AlarmScheduler
 import java.util.Locale
 
 private const val TAG = "AlarmFragment"
@@ -35,17 +35,10 @@ class AlarmFragment : BaseFragment<FragmentAlarmBinding, AlarmViewModel>(
                 showToast("Please select a future time!", Toast.LENGTH_SHORT)
             } else {
                 showToast("Setting your alarm for $formattedTime", Toast.LENGTH_SHORT)
-                fragmentViewModel.saveAlarm(
-                    Alarm(
-                        null, formattedTime, "Alarm"
-                    )
-                )
+                val alarm = Alarm(0, formattedTime, "Alarm")
+                val alarmId = fragmentViewModel.saveAlarm(alarm).toInt()
                 fragmentViewModel.getAllAlarms()
-                AlarmScheduler(requireContext()).schedule(
-                    Alarm(
-                        null, formattedTime, "Alarm"
-                    )
-                )
+                AlarmUtils.schedule(alarmId, alarm, requireContext())
             }
         }
 
@@ -95,7 +88,6 @@ class AlarmFragment : BaseFragment<FragmentAlarmBinding, AlarmViewModel>(
     }
 
     private fun setUpRecyclerView() {
-
         alarmsAdapter = GenericDataAdapter(alarmsList, R.layout.alarm_list_item) { alarm ->
             showToast(alarm.message, Toast.LENGTH_SHORT)
         }

@@ -1,4 +1,4 @@
-package com.example.cleanarchitecture.domain.repository
+package com.example.servicesdemo.domain.repository
 
 import androidx.lifecycle.LiveData
 import com.example.servicesdemo.base.extensions.toLiveData
@@ -11,7 +11,7 @@ class AlarmRepositoryImpl(
     override fun getAllAlarms(): LiveData<List<Alarm>> =
         localDataSource.getAllAlarmsLocal().toLiveData()
 
-    override fun saveAlarm(alarm: Alarm) {
-        localDataSource.saveAlarmLocal(alarm)
+    override fun saveAlarm(alarm: Alarm): Long {
+        return localDataSource.saveAlarmLocal(alarm)
     }
 }
