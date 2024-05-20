@@ -34,16 +34,21 @@ fun <T> List<T>.toLiveData(): LiveData<List<T>> {
 }
 
 fun AlarmEntity.toAlarm(): Alarm = Alarm(
-    id = id, time = time, message = message
+    id = id,
+    time = time,
+    message = message,
+    preAlarmAction = preAlarmAction,
+    onAlarmAction = onAlarmAction,
+    postAlarmAction = postAlarmAction
 )
 
 fun Alarm.toAlarmEntity(): AlarmEntity = AlarmEntity(
     id = id,
     time = time,
     message = message,
-    preAlarmAction = false,
-    onAlarmAction = false,
-    postAlarmAction = false
+    preAlarmAction = preAlarmAction,
+    onAlarmAction = onAlarmAction,
+    postAlarmAction = postAlarmAction
 )
 
 fun String.toLocalDateTime(): LocalDateTime {

@@ -9,7 +9,7 @@ import com.example.servicesdemo.data.local.model.AlarmEntity
 
 
 @Database(
-    version = 2, entities = [AlarmEntity::class]
+    version = 1, entities = [AlarmEntity::class]
 )
 abstract class AlarmsAppDatabase : RoomDatabase() {
 

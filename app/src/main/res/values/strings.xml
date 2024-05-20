@@ -10,10 +10,10 @@
     <string name="countdown_time_et_empty_toast_msg">Please enter countdown time</string>
     <string name="service_not_running_toast_msg">Counter Service Not Running</string>
     <string name="service_already_running_toast_msg">Counter Service Already Running</string>
-    <string name="service_stopped_toast_msg">Counter Service Stopped</string>
+    <string name="service_stopped_toast_msg">Service Stopped</string>
     <string name="alarm_menu_item">Alarm</string>
     <string name="counter_menu_item">Counter</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="alarms_title_tv_text">Alarms</string>
+    <string name="select_future_time">Please select a future time!</string>
+    <string name="no_alarms">No alarms set!</string>
 </resources>

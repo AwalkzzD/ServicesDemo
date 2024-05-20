@@ -2,12 +2,13 @@ package com.example.servicesdemo.ui.home.alarm
 
 import android.app.TimePickerDialog
 import android.os.Build
+import android.util.Log
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.servicesdemo.R
 import com.example.servicesdemo.base.adapter.GenericDataAdapter
 import com.example.servicesdemo.base.extensions.toLocalDateTime
-import com.example.servicesdemo.base.utils.AlarmUtils
 import com.example.servicesdemo.base.utils.AppPermission
 import com.example.servicesdemo.base.utils.CommonUtils
 import com.example.servicesdemo.base.utils.isGranted
@@ -15,7 +16,10 @@ import com.example.servicesdemo.base.utils.requestPermission
 import com.example.servicesdemo.base.views.BaseFragment
 import com.example.servicesdemo.data.dto.alarm.Alarm
 import com.example.servicesdemo.databinding.FragmentAlarmBinding
+import com.example.servicesdemo.ui.home.alarm.utils.AlarmScheduler
+import kotlinx.coroutines.launch
 import java.util.Locale
+import kotlin.math.abs
 
 private const val TAG = "AlarmFragment"
 
@@ -32,13 +36,34 @@ class AlarmFragment : BaseFragment<FragmentAlarmBinding, AlarmViewModel>(
             val formattedTime = String.format(Locale.getDefault(), "%02d:%02d", hourOfDay, minute)
 
             if (CommonUtils.checkCurrentTimePassed(formattedTime.toLocalDateTime())) {
-                showToast("Please select a future time!", Toast.LENGTH_SHORT)
+                showToast(getString(R.string.select_future_time), Toast.LENGTH_SHORT)
             } else {
                 showToast("Setting your alarm for $formattedTime", Toast.LENGTH_SHORT)
-                val alarm = Alarm(0, formattedTime, "Alarm")
+                val alarm = Alarm(
+                    id = 0,
+                    time = formattedTime,
+                    message = "Alarm",
+                    preAlarmAction = false,
+                    onAlarmAction = false,
+                    postAlarmAction = false
+                )
+
+                Log.d(TAG, "Alarm HashCodes: ${abs(alarm.hashCode())}")
+
                 val alarmId = fragmentViewModel.saveAlarm(alarm).toInt()
-                fragmentViewModel.getAllAlarms()
-                AlarmUtils.schedule(alarmId, alarm, requireContext())
+
+                // schedule alarms
+                if (CommonUtils.checkPreAlarmTimePassed(alarm.time.toLocalDateTime())) {
+                    AlarmScheduler(requireContext()).schedulePreAlarm(
+                        alarmId = alarmId, alarm = alarm
+                    )
+                }
+                AlarmScheduler(requireContext()).schedule(
+                    alarmId = alarmId, alarm = alarm
+                )
+                AlarmScheduler(requireContext()).schedulePostAlarm(
+                    alarmId = alarmId, alarm = alarm
+                )
             }
         }
 
@@ -71,13 +96,15 @@ class AlarmFragment : BaseFragment<FragmentAlarmBinding, AlarmViewModel>(
     private fun setUpViewModel() {
         fragmentViewModel.getAllAlarms()
 
-        fragmentViewModel.alarmsLiveData.observe(viewLifecycleOwner) { alarms ->
-            if (!alarms.isNullOrEmpty()) {
-                alarmsList.clear()
-                alarmsList.addAll(alarms)
-                alarmsAdapter.notifyItemRangeChanged(alarmsList.size, alarmsList.size + alarms.size)
-            } else {
-                showToast("No alarms set!", Toast.LENGTH_SHORT)
+        lifecycleScope.launch {
+            fragmentViewModel.alarmsListFlow.collect { alarms ->
+                if (alarms.isNotEmpty()) {
+                    alarmsList.clear()
+                    alarmsList.addAll(alarms)
+                    alarmsAdapter.notifyDataSetChanged()
+                } else {
+                    showToast(getString(R.string.no_alarms), Toast.LENGTH_SHORT)
+                }
             }
         }
     }

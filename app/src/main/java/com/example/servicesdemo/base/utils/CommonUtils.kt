@@ -1,6 +1,5 @@
 package com.example.servicesdemo.base.utils
 
-import android.app.AlarmManager
 import android.app.AlertDialog
 import android.app.Notification
 import android.app.NotificationChannel
@@ -11,13 +10,9 @@ import android.content.Intent
 import android.media.AudioManager
 import android.media.RingtoneManager
 import android.os.Bundle
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.servicesdemo.R
 import com.example.servicesdemo.base.extensions.toLocalDateTime
-import com.example.servicesdemo.base.utils.AlarmTimeType.POST
-import com.example.servicesdemo.base.utils.AlarmTimeType.PRE
-import com.example.servicesdemo.base.utils.AlarmTimeType.SCHEDULED
 import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_ID
 import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_ID_ALARM
 import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_ID_JS
@@ -26,12 +21,10 @@ import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_NAME
 import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_NAME_ALARM
 import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_NAME_JS
 import com.example.servicesdemo.base.utils.AppConstants.CHANNEL_NAME_WM
-import com.example.servicesdemo.data.dto.alarm.Alarm
 import com.example.servicesdemo.ui.home.MainActivity
 import com.example.servicesdemo.ui.home.alarm.utils.AlarmDismissReceiver
-import com.example.servicesdemo.ui.home.alarm.utils.AlarmReceiver
 import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 
 
 /**
@@ -124,57 +117,68 @@ object NotificationUtils {
     }
 
     fun createPreAlarmNotification(
-        context: Context, msg: String, notificationId: Int
+        alarmId: Int, notificationId: Int, message: String, context: Context
     ): Notification {
         getNotificationManager(context).createNotificationChannel(getAlarmNotificationChannel())
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM).setContentTitle("Alarm")
-            .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(msg)
+            .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(message)
             .setSmallIcon(R.drawable.ic_launcher_foreground).setAutoCancel(true).addAction(
                 0, "CANCEL ALARM", PendingIntent.getBroadcast(
                     context,
                     notificationId,
-                    Intent(context, AlarmDismissReceiver::class.java).putExtra(
-                        "NOTIFICATION_ID", notificationId
-                    ).putExtra("ALARM_ACTION", "PRE_ALARM"),
+                    Intent(context, AlarmDismissReceiver::class.java).putExtras(
+                        Bundle().apply {
+                            putInt("ALARM_ID", alarmId)
+                            putInt("NOTIFICATION_ID", notificationId)
+                            putString("ALARM_ACTION", "PRE_ALARM")
+                        }),
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ).build()
     }
 
-    fun createAlarmNotification(context: Context, msg: String, notificationId: Int): Notification {
+    fun createAlarmNotification(
+        alarmId: Int, notificationId: Int, message: String, context: Context
+    ): Notification {
         getNotificationManager(context).createNotificationChannel(getAlarmNotificationChannel())
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM).setContentTitle("Alarm")
-            .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(msg)
+            .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(message)
             .setSmallIcon(R.drawable.ic_launcher_foreground).setSound(
                 RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM), AudioManager.STREAM_ALARM
             ).addAction(
                 0, "STOP", PendingIntent.getBroadcast(
                     context,
                     notificationId,
-                    Intent(context, AlarmDismissReceiver::class.java).putExtra(
-                        "NOTIFICATION_ID", notificationId
-                    ).putExtra("ALARM_ACTION", "ON_ALARM"),
+                    Intent(context, AlarmDismissReceiver::class.java).putExtras(
+                        Bundle().apply {
+                            putInt("ALARM_ID", alarmId)
+                            putInt("NOTIFICATION_ID", notificationId)
+                            putString("ALARM_ACTION", "ON_ALARM")
+                        }),
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ).build()
     }
 
     fun createPostAlarmNotification(
-        context: Context, msg: String, notificationId: Int
+        alarmId: Int, notificationId: Int, message: String, context: Context
     ): Notification {
         getNotificationManager(context).createNotificationChannel(getAlarmNotificationChannel())
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM).setContentTitle("Alarm")
-            .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(msg)
+            .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(message)
             .setSmallIcon(R.drawable.ic_launcher_foreground).setAutoCancel(true).addAction(
                 0, "DISMISS", PendingIntent.getBroadcast(
                     context,
                     notificationId,
-                    Intent(context, AlarmDismissReceiver::class.java).putExtra(
-                        "NOTIFICATION_ID", notificationId
-                    ).putExtra("ALARM_ACTION", "POST_ALARM"),
+                    Intent(context, AlarmDismissReceiver::class.java).putExtras(
+                        Bundle().apply {
+                            putInt("ALARM_ID", alarmId)
+                            putInt("NOTIFICATION_ID", notificationId)
+                            putString("ALARM_ACTION", "POST_ALARM")
+                        }),
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ).build()
@@ -198,146 +202,7 @@ object CommonUtils {
         return currentTime.isBefore(System.currentTimeMillis().toLocalDateTime())
     }
 
-    fun checkPreAlarmTimePassed(currentTime: LocalDateTime): Boolean {
-        return currentTime.isBefore(System.currentTimeMillis().toLocalDateTime().plusMinutes(3))
-    }
-}
-
-
-/**
- * Alarm Utils
- */
-object AlarmUtils {
-
-    private var ALARM_MANAGER_INSTANCE: AlarmManager? = null
-
-    private fun getAlarmManager(context: Context): AlarmManager =
-        ALARM_MANAGER_INSTANCE ?: synchronized(Any()) {
-            (context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).apply {
-                ALARM_MANAGER_INSTANCE = this
-            }
-        }
-
-    private fun schedulePreAlarm(alarmId: Int, alarm: Alarm, context: Context) {
-
-        val alarmBundle = Bundle().apply {
-            putInt("NOTIFICATION_ID", alarmId)
-            putString("ALARM_TYPE", "PRE_ALARM")
-            putString("EXTRA_MESSAGE", "${alarm.time} Alarm will ring soon")
-        }
-
-        getAlarmManager(context).setExact(
-            AlarmManager.RTC_WAKEUP, getAlarmTime(alarm, PRE), PendingIntent.getBroadcast(
-                context, alarmId, Intent(context, AlarmReceiver::class.java).putExtras(
-                    alarmBundle
-                ), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        )
-
-        Log.d("TAG", "pre alarm schedule: called")
-
-        /*getAlarmManager(context).setExact(
-            AlarmManager.RTC_WAKEUP, getAlarmTime(alarm, PRE), alarm.hashCode().toString(), {
-                val notificationManager = NotificationUtils.getNotificationManager(context)
-                notificationManager.notify(
-                    alarmId, NotificationUtils.createPreAlarmNotification(
-                        context, "${alarm.time} Alarm will ring soon", alarmId
-                    )
-                )
-            }, null
-        )*/
-    }
-
-    fun schedule(alarmId: Int, alarm: Alarm, context: Context) {
-
-        if (!CommonUtils.checkPreAlarmTimePassed(alarm.time.toLocalDateTime())) {
-            schedulePreAlarm(alarmId, alarm, context)
-        }
-        schedulePostAlarm(alarmId, alarm, context)
-
-        val alarmBundle = Bundle().apply {
-            putInt("NOTIFICATION_ID", alarmId)
-            putString("ALARM_TYPE", "ON_ALARM")
-            putString("EXTRA_MESSAGE", "${alarm.time} Alarm is ringing")
-        }
-
-        getAlarmManager(context).setExact(
-            AlarmManager.RTC_WAKEUP, getAlarmTime(alarm, SCHEDULED), PendingIntent.getBroadcast(
-                context, alarmId, Intent(context, AlarmReceiver::class.java).putExtras(
-                    alarmBundle
-                ), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        )
-
-        Log.d("TAG", "schedule: method called")
-
-        /*getAlarmManager(context).setExact(
-            AlarmManager.RTC_WAKEUP, getAlarmTime(alarm, SCHEDULED), alarm.hashCode().toString(), {
-                val notificationManager = NotificationUtils.getNotificationManager(context)
-                notificationManager.notify(
-                    alarmId, NotificationUtils.createAlarmNotification(
-                        context, "${alarm.time} Alarm is ringing", alarmId
-                    )
-                )
-            }, null
-        )*/
-    }
-
-    private fun schedulePostAlarm(alarmId: Int, alarm: Alarm, context: Context) {
-
-        val alarmBundle = Bundle().apply {
-            putInt("NOTIFICATION_ID", alarmId)
-            putString("ALARM_TYPE", "POST_ALARM")
-            putString("EXTRA_MESSAGE", "${alarm.time} Alarm rang few minutes ago")
-        }
-
-        getAlarmManager(context).setExact(
-            AlarmManager.RTC_WAKEUP, getAlarmTime(alarm, POST), PendingIntent.getBroadcast(
-                context,
-                alarmId,
-                Intent(context, AlarmReceiver::class.java).putExtras(alarmBundle),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        )
-        Log.d("TAG", "post alarm schedule: called")
-
-        /*getAlarmManager(context).setExact(
-            AlarmManager.RTC_WAKEUP, getAlarmTime(alarm, POST), alarm.hashCode().toString(), {
-                val notificationManager = NotificationUtils.getNotificationManager(context)
-                notificationManager.notify(
-                    alarmId, NotificationUtils.createPostAlarmNotification(
-                        context, "${alarm.time} Alarm rang few minutes ago", alarmId
-                    )
-                )
-            }, null
-        )*/
-    }
-
-    fun cancel(alarm: Alarm, context: Context) {
-        getAlarmManager(context).cancel(
-            PendingIntent.getBroadcast(
-                context,
-                alarm.hashCode(),
-                Intent(context, AlarmDismissReceiver::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        )
-    }
-
-
-    private fun getAlarmTime(alarm: Alarm, timeType: AlarmTimeType): Long = when (timeType) {
-        PRE -> {
-            (alarm.time.toLocalDateTime().atZone(ZoneId.systemDefault())
-                .toEpochSecond() * 1000L) - (3 * 60 * 1000)
-        }
-
-        SCHEDULED -> {
-            (alarm.time.toLocalDateTime().atZone(ZoneId.systemDefault()).toEpochSecond() * 1000L)
-        }
-
-        POST -> {
-            (alarm.time.toLocalDateTime().atZone(ZoneId.systemDefault())
-                .toEpochSecond() * 1000L) + (3 * 60 * 1000)
-        }
+    fun checkPreAlarmTimePassed(alarmTime: LocalDateTime): Boolean {
+        return ChronoUnit.MINUTES.between(LocalDateTime.now(), alarmTime) >= 2
     }
 }
