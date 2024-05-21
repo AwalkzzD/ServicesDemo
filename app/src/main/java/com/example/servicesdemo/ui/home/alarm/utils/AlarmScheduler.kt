@@ -35,7 +35,7 @@ class AlarmScheduler(private val context: Context) {
                 context,
                 getAlarmId(alarmId, alarm, AlarmTimeType.PRE),
                 Intent(context, AlarmReceiver::class.java).putExtras(alarmBundle),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
         )
     }
@@ -55,7 +55,7 @@ class AlarmScheduler(private val context: Context) {
                 context,
                 getAlarmId(alarmId, alarm, AlarmTimeType.SCHEDULED),
                 Intent(context, AlarmReceiver::class.java).putExtras(alarmBundle),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
         )
     }
@@ -76,18 +76,18 @@ class AlarmScheduler(private val context: Context) {
                 context,
                 getAlarmId(alarmId, alarm, AlarmTimeType.POST),
                 Intent(context, AlarmReceiver::class.java).putExtras(alarmBundle),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
         )
     }
 
-    fun cancel(alarmId: Int) {
+    fun cancel(alarmId: Int, alarmBundle: Bundle) {
         getAlarmManager(context).cancel(
             PendingIntent.getBroadcast(
                 context,
                 alarmId,
-                Intent(context, AlarmDismissReceiver::class.java).putExtras(Bundle()),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                Intent(context, AlarmReceiver::class.java).putExtras(alarmBundle),
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_MUTABLE
             )
         )
     }
@@ -122,5 +122,4 @@ class AlarmScheduler(private val context: Context) {
                 (alarm.time.replace(":", "") + alarmId.toString() + "001").toInt()
             }
         }
-
 }

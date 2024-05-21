@@ -116,10 +116,11 @@ object NotificationUtils {
             .setAutoCancel(true).build()
     }
 
-    fun createPreAlarmNotification(
-        alarmId: Int, notificationId: Int, message: String, context: Context
-    ): Notification {
+    fun createPreAlarmNotification(alarmBundle: Bundle, context: Context): Notification {
         getNotificationManager(context).createNotificationChannel(getAlarmNotificationChannel())
+
+        val notificationId = alarmBundle.getInt("NOTIFICATION_ID")
+        val message = alarmBundle.getString("MESSAGE")
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM).setContentTitle("Alarm")
             .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(message)
@@ -127,21 +128,17 @@ object NotificationUtils {
                 0, "CANCEL ALARM", PendingIntent.getBroadcast(
                     context,
                     notificationId,
-                    Intent(context, AlarmDismissReceiver::class.java).putExtras(
-                        Bundle().apply {
-                            putInt("ALARM_ID", alarmId)
-                            putInt("NOTIFICATION_ID", notificationId)
-                            putString("ALARM_ACTION", "PRE_ALARM")
-                        }),
+                    Intent(context, AlarmDismissReceiver::class.java).putExtras(alarmBundle),
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ).build()
     }
 
-    fun createAlarmNotification(
-        alarmId: Int, notificationId: Int, message: String, context: Context
-    ): Notification {
+    fun createAlarmNotification(alarmBundle: Bundle, context: Context): Notification {
         getNotificationManager(context).createNotificationChannel(getAlarmNotificationChannel())
+
+        val notificationId = alarmBundle.getInt("NOTIFICATION_ID")
+        val message = alarmBundle.getString("MESSAGE")
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM).setContentTitle("Alarm")
             .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(message)
@@ -151,21 +148,17 @@ object NotificationUtils {
                 0, "STOP", PendingIntent.getBroadcast(
                     context,
                     notificationId,
-                    Intent(context, AlarmDismissReceiver::class.java).putExtras(
-                        Bundle().apply {
-                            putInt("ALARM_ID", alarmId)
-                            putInt("NOTIFICATION_ID", notificationId)
-                            putString("ALARM_ACTION", "ON_ALARM")
-                        }),
+                    Intent(context, AlarmDismissReceiver::class.java).putExtras(alarmBundle),
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ).build()
     }
 
-    fun createPostAlarmNotification(
-        alarmId: Int, notificationId: Int, message: String, context: Context
-    ): Notification {
+    fun createPostAlarmNotification(alarmBundle: Bundle, context: Context): Notification {
         getNotificationManager(context).createNotificationChannel(getAlarmNotificationChannel())
+
+        val notificationId = alarmBundle.getInt("NOTIFICATION_ID")
+        val message = alarmBundle.getString("MESSAGE")
 
         return NotificationCompat.Builder(context, CHANNEL_ID_ALARM).setContentTitle("Alarm")
             .setPriority(NotificationManager.IMPORTANCE_MAX).setContentText(message)
@@ -173,12 +166,7 @@ object NotificationUtils {
                 0, "DISMISS", PendingIntent.getBroadcast(
                     context,
                     notificationId,
-                    Intent(context, AlarmDismissReceiver::class.java).putExtras(
-                        Bundle().apply {
-                            putInt("ALARM_ID", alarmId)
-                            putInt("NOTIFICATION_ID", notificationId)
-                            putString("ALARM_ACTION", "POST_ALARM")
-                        }),
+                    Intent(context, AlarmDismissReceiver::class.java).putExtras(alarmBundle),
                     PendingIntent.FLAG_IMMUTABLE
                 )
             ).build()

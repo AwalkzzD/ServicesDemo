@@ -14,33 +14,25 @@ class AlarmReceiver : BroadcastReceiver() {
         val notificationManager = getNotificationManager(context)
 
         if (alarmBundle != null) {
-            val alarmId = alarmBundle.getInt("ALARM_ID")
             val notificationId = alarmBundle.getInt("NOTIFICATION_ID")
             val alarmType = alarmBundle.getString("ALARM_TYPE") ?: ""
-            val message = alarmBundle.getString("MESSAGE") ?: ""
 
             when (alarmType) {
                 "PRE_ALARM" -> {
                     notificationManager.notify(
-                        notificationId, createPreAlarmNotification(
-                            alarmId, notificationId, message, context
-                        )
+                        notificationId, createPreAlarmNotification(alarmBundle, context)
                     )
                 }
 
                 "ON_ALARM" -> {
                     notificationManager.notify(
-                        notificationId, createAlarmNotification(
-                            alarmId, notificationId, message, context
-                        )
+                        notificationId, createAlarmNotification(alarmBundle, context)
                     )
                 }
 
                 "POST_ALARM" -> {
                     notificationManager.notify(
-                        notificationId, createPostAlarmNotification(
-                            alarmId, notificationId, message, context
-                        )
+                        notificationId, createPostAlarmNotification(alarmBundle, context)
                     )
                 }
             }

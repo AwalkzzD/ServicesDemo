@@ -2,7 +2,6 @@ package com.example.servicesdemo.ui.home.alarm
 
 import android.app.TimePickerDialog
 import android.os.Build
-import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,7 +18,6 @@ import com.example.servicesdemo.databinding.FragmentAlarmBinding
 import com.example.servicesdemo.ui.home.alarm.utils.AlarmScheduler
 import kotlinx.coroutines.launch
 import java.util.Locale
-import kotlin.math.abs
 
 private const val TAG = "AlarmFragment"
 
@@ -48,20 +46,18 @@ class AlarmFragment : BaseFragment<FragmentAlarmBinding, AlarmViewModel>(
                     postAlarmAction = false
                 )
 
-                Log.d(TAG, "Alarm HashCodes: ${abs(alarm.hashCode())}")
-
                 val alarmId = fragmentViewModel.saveAlarm(alarm).toInt()
 
                 // schedule alarms
                 if (CommonUtils.checkPreAlarmTimePassed(alarm.time.toLocalDateTime())) {
-                    AlarmScheduler(requireContext()).schedulePreAlarm(
+                    AlarmScheduler(requireActivity().applicationContext).schedulePreAlarm(
                         alarmId = alarmId, alarm = alarm
                     )
                 }
-                AlarmScheduler(requireContext()).schedule(
+                AlarmScheduler(requireActivity().applicationContext).schedule(
                     alarmId = alarmId, alarm = alarm
                 )
-                AlarmScheduler(requireContext()).schedulePostAlarm(
+                AlarmScheduler(requireActivity().applicationContext).schedulePostAlarm(
                     alarmId = alarmId, alarm = alarm
                 )
             }
